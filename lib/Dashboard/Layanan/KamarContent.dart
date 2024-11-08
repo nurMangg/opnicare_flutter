@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:opnicare_app/Controller/DatabaseHelper.dart';
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelKamar.dart';
 import 'package:opnicare_app/main.dart';
 
@@ -16,26 +17,23 @@ class KamarContent extends StatefulWidget {
 class _KamarContentState extends State < KamarContent > {
   List<Kamar> kamarList = [];
   bool isLoading = true;
+  DatabaseHelper databaseHelper = new DatabaseHelper();
+
 
   Future<void> fetchData() async {
     try {
-      final baseUrl = Url.base_url ;
-      final response = await http.get(Uri.parse('${baseUrl}masters/kamars/api/getKamar'));
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final Kamars = List<Kamar>.from(jsonData.map((json) => Kamar.fromJson(json)));
+      final List<Kamar>? kamars = await databaseHelper.getDataKamar();
+      if (kamars != null) {
         setState(() {
-          kamarList = Kamars;
+          kamarList = kamars;
           isLoading = false;
-
         });
       } else {
-        print('Error: Gagal mengambil data');
+        print('Error: Gagalan mengambil data');
       }
     } catch (e) {
       print('Error: $e');
     }
-    return; 
   }
 
   @override

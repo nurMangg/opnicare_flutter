@@ -65,7 +65,7 @@ class _DetailJanjiTemuState extends State<DetailJanjiTemu> {
                   Padding(
                     padding: const EdgeInsets.only(left: 30.0),
                     child: Text(
-                      'Lorem Ipsum Lorem Ipsum Lorem Ipsum\nLorem Ipsum Lorem Ipsum',
+                      'Ini adalah detail riwayat dari janji temu anda dengan dokter',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,

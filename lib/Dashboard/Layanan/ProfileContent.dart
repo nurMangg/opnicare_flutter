@@ -169,20 +169,7 @@ class _ProfileContentState extends State<ProfileContent> {
                       ),
                       
                       // Tombol Logout
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          // Aksi logout
-                        },
-                        icon: Icon(Icons.logout),
-                        label: Text('Logout'),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          padding: EdgeInsets.symmetric(vertical: 14.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
+                
                     ],
                   ),
                 ),

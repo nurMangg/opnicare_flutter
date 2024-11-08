@@ -16,26 +16,38 @@ class LoginPage extends StatefulWidget {
   State < LoginPage > createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State < LoginPage > {
+class _LoginPageState extends State <LoginPage> {
 
-  // read() async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final key = 'token';
-  //   final value = prefs.get(key ) ?? 0;
-  //   print(value);
-  //   if(value != '0'){
-  //     Navigator.of(context).push(
-  //         new MaterialPageRoute(
-  //           builder: (BuildContext context) => new DashboardPage(),
-  //         )
-  //     );
-  //   }
-  // }
+  read() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final key = 'token';
+    final value = prefs.get(key ) ?? 0;
+    print(value);
+    if(value != 0){
+      Navigator.of(context).push(
+          new MaterialPageRoute(
+            builder: (BuildContext context) => new DashboardPage(),
+          )
+      );
+    }
+  }
 
   @override
   initState(){
     super.initState();
-    // read();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    if (arguments == 'logout') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Logout berhasil', style: TextStyle(color: Colors.white)),
+          backgroundColor: AppColor.primaryColor,
+          
+        ),
+      );
+    }
+  });
+    read();
     databaseHelper.getCsrfToken();
   }
 
@@ -69,7 +81,7 @@ class _LoginPageState extends State < LoginPage > {
           print("Login berhasil");
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => DashboardPage()),
+            MaterialPageRoute(builder: (_) => DashboardPage(),settings: RouteSettings(arguments: 'login'),),
           );
         } else {
           print("Login salah");
@@ -143,6 +155,13 @@ class _LoginPageState extends State < LoginPage > {
                       ),
 
                       SizedBox(height: 25),
+                      Text(
+                        '$msgStatus',
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 20),
 
                       // Email TextField
                       TextField(
@@ -191,7 +210,7 @@ class _LoginPageState extends State < LoginPage > {
                         ),
                       ),
                       child: isLoading
-                          ? CircularProgressIndicator(color: AppColor.primaryTextColor) // Tampilkan indikator loading
+                          ? CircularProgressIndicator(color: AppColor.primaryTextColor, backgroundColor: AppColor.primaryColor,) // Tampilkan indikator loading
                           : Text(
                               'Login',
                               style: GoogleFonts.poppins(
@@ -202,13 +221,7 @@ class _LoginPageState extends State < LoginPage > {
                     ),
 
                       SizedBox(height: 20),
-                      Text(
-                        '$msgStatus',
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
+                      
 
                       Align(
                         alignment: Alignment.bottomCenter,
@@ -252,7 +265,7 @@ class _LoginPageState extends State < LoginPage > {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.of(context).push(MaterialPageRoute(
+                                    Navigator.of(context).pushReplacement(MaterialPageRoute(
                                       builder: (context) => RegisterPage(),
                                     ));
                                   },

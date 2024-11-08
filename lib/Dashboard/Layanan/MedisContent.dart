@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:opnicare_app/Controller/DatabaseHelper.dart';
 import 'package:opnicare_app/Dashboard/DetailContent/DetailMedisContent.dart';
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelMedis.dart';
 import 'package:opnicare_app/main.dart';
@@ -19,27 +20,23 @@ class MedisContent extends StatefulWidget {
 class _MedisContentState extends State < MedisContent > {
   List < Obat > cartItems = [];
   bool isLoading = true;
+  DatabaseHelper databaseHelper = new DatabaseHelper();
 
-  Future < void > fetchData() async {
+
+  Future<void> fetchData() async {
     try {
-      final baseUrl = Url.base_url;
-      final response = await http.get(Uri.parse('${baseUrl}masters/obats/api/getObat'));
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final dokters = List < Obat > .from(jsonData.map((json) => Obat.fromJson(json)));
+      final List<Obat>? obats = await databaseHelper.getDataObat();
+      if (obats != null) {
         setState(() {
-
-          cartItems = dokters;
+          cartItems = obats;
           isLoading = false;
-          print(cartItems);
         });
       } else {
-        print('Error: Gagal mengambil data');
+        print('Error: Gagalan mengambil data');
       }
     } catch (e) {
       print('Error: $e');
     }
-    return;
   }
 
   @override

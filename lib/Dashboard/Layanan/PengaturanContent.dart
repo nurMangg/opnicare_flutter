@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:opnicare_app/Controller/DatabaseHelper.dart';
+import 'package:opnicare_app/loginPage.dart';
 import 'package:opnicare_app/main.dart';
 
 
 class PengaturanContent extends StatelessWidget {
+  DatabaseHelper databaseHelper = new DatabaseHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -94,8 +97,16 @@ class PengaturanContent extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.logout, color: AppColor.primaryColor),
             title: Text('Keluar'),
-            onTap: () {
-              // Log out atau navigasi kembali ke halaman login
+            onTap: () async {
+              await databaseHelper.logout();
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(),
+                  settings: RouteSettings(arguments: 'logout'),
+                ),
+              );
             },
           ),
         ],

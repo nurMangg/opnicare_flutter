@@ -12,7 +12,13 @@ import 'package:opnicare_app/Dashboard/Layanan/PengaturanContent.dart';
 import 'package:opnicare_app/Dashboard/Layanan/ProfileContent.dart';
 import 'package:opnicare_app/main.dart';
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  
   final List<String> newsList = [
     'Berita 1: Update terbaru dari OPNICARE...',
     'Berita 2: Peluncuran fitur baru...',

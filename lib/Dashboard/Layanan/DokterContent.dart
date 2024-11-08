@@ -44,7 +44,7 @@ Future<void> fetchData() async {
         isLoading = false;
       });
     } else {
-      print('Error: Gagal mengambil data');
+      print('Error: Gagalan mengambil data');
     }
   } catch (e) {
     print('Error: $e');

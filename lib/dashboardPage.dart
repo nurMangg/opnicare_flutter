@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:opnicare_app/Dashboard/HomeContent.dart';
 import 'package:opnicare_app/Dashboard/JadwalContent.dart';
@@ -33,6 +34,18 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    if (arguments == 'login') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login berhasil', style: TextStyle(color: Colors.white)),
+          backgroundColor: AppColor.primaryColor,
+          
+        ),
+      );
+    }
+  });
     // Mengatur _selectedIndex dari nilai widget.selectedIndex
     _selectedIndex = widget.selectedIndex;
   }
@@ -77,13 +90,17 @@ class _DashboardPageState extends State<DashboardPage> {
       );
       return false; // Tidak keluar
     }
+    SystemNavigator.pop();
     return true; // Keluar
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop, // Menangani aksi kembali
+      onWillPop: () async {
+        
+        return await _onWillPop(); // Menangani aksi kembali
+      },
       child: Scaffold(
         body: Stack(
           children: [

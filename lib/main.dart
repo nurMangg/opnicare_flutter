@@ -32,5 +32,5 @@ class AppColor {
 }
 
 class Url {
-  static const String base_url = 'http://192.168.1.62:8000/';
+  static const String base_url = 'http://192.168.1.62:8000/api';
 }

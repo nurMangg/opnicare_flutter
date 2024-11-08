@@ -157,7 +157,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
+                            Navigator.pushReplacement(context, MaterialPageRoute(
                               builder: (context) => LoginPage(),
                             ));
                           },

@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:opnicare_app/main.dart';
 
-class KeranjangContent extends StatelessWidget {
+class KeranjangContent extends StatefulWidget {
+  @override
+  State<KeranjangContent> createState() => _KeranjangContentState();
+}
+
+class _KeranjangContentState extends State<KeranjangContent> {
   final List<Map<String, dynamic>> cartItems = [
     {
       'obatName': 'Paracetamol',
@@ -69,56 +74,79 @@ class KeranjangContent extends StatelessWidget {
                 itemCount: cartItems.length,
                 itemBuilder: (context, index) {
                   final item = cartItems[index];
-                  return Card(
-                    color: AppColor.secondaryTextColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  return Dismissible(
+                    key: Key(item['obatName']), // Gunakan key unik untuk setiap item
+                    direction: DismissDirection.endToStart, // Geser dari kanan ke kiri
+                    background: Container(
+                      color: Colors.red,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                    elevation: 3,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            item['image'],
-                            height: 80,
-                            width: 80,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['obatName'],
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Rp ${item['price']}',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
+                    onDismissed: (direction) {
+                      // Hapus item dari cartItems
+                      setState(() {
+                        cartItems.removeAt(index);
+                      });
+                    },
+                    child: Card(
+                      color: AppColor.secondaryTextColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 3,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              item['image'],
+                              height: 80,
+                              width: 80,
+                              fit: BoxFit.cover,
                             ),
-                          ),
-                          Text(
-                            'x${item['quantity']}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['obatName'],
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Rp ${item['price']}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              'x${item['quantity']}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

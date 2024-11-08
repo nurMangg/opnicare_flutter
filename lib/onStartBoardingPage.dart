@@ -1,9 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:opnicare_app/dashboardPage.dart';
 import 'package:opnicare_app/main.dart';
 import 'package:opnicare_app/onBoardingPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class onStartBoardingPage extends StatelessWidget {
+class onStartBoardingPage extends StatefulWidget {
+  @override
+  State<onStartBoardingPage> createState() => _onStartBoardingPageState();
+}
+
+class _onStartBoardingPageState extends State<onStartBoardingPage> {
+
+    read() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final key = 'token';
+    final value = prefs.get(key ) ?? 0;
+    print(value);
+    if(value != 0){
+      Navigator.of(context).push(
+          new MaterialPageRoute(
+            builder: (BuildContext context) => new DashboardPage(),
+          )
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    read();
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

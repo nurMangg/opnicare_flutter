@@ -34,16 +34,34 @@ class _JadwalContentState extends State<JadwalContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Riwayat Jadwal Janji Temu',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0), // Tinggi AppBar
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF007037), 
+                Color(0xFFFFD60A), 
+              ],
+              begin: Alignment.bottomLeft, 
+              end: Alignment.topRight,
+            ),
+          ),
+          child: AppBar(
+            title: Text(
+              'Riwayat Jadwal Janji Temu',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0, 
+            foregroundColor: Colors.white,
           ),
         ),
-        backgroundColor: Colors.green, // Example color for the AppBar
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -116,7 +134,7 @@ class _JadwalContentState extends State<JadwalContent> {
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    SizedBox(height: 4),
+                                    SizedBox(height: 1),
                                     Text(
                                       '${appointment.poliId}',
                                       style: GoogleFonts.poppins(
@@ -124,7 +142,7 @@ class _JadwalContentState extends State<JadwalContent> {
                                         color: Colors.grey[600],
                                       ),
                                     ),
-                                    SizedBox(height: 8),
+                                    SizedBox(height: 3),
                                     Row(
                                       children: [
                                         Icon(Icons.calendar_today,
