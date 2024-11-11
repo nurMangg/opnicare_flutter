@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:opnicare_app/Component/SuccessDialog.dart';
+import 'package:opnicare_app/Controller/DatabaseHelper.dart';
 import 'package:opnicare_app/main.dart';
 
 class KritikSaranContent extends StatefulWidget {
@@ -14,9 +15,41 @@ class KritikSaranContent extends StatefulWidget {
 class _KritikSaranContentState extends State<KritikSaranContent> {
   File? _selectedImage;
   final _picker = ImagePicker();
+  final DatabaseHelper databaseHelper = DatabaseHelper();
 
   final _formKey = GlobalKey<FormState>();
   String _keluhan = '';
+
+  Future<void> _submitKritikSaran() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      _formKey.currentState?.save();
+      if (_selectedImage != null) {
+        try {
+          final imageBytes = await _selectedImage!.readAsBytes();
+          final statusCode = await databaseHelper.sendKritikSaran(_keluhan, imageBytes);
+
+          print(imageBytes);
+          if (statusCode == 200) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Berhasil mengirim Kritik dan Saran.')),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Gagal mengirim Kritik dan Saran.')),
+            );
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Terjadi kesalahan.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Silakan pilih gambar terlebih dahulu.')),
+        );
+      }
+    }
+  }
 
   Future<void> _showImageSourceActionSheet(BuildContext context) async {
     showModalBottomSheet(
@@ -57,6 +90,7 @@ class _KritikSaranContentState extends State<KritikSaranContent> {
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
+        // print(_selectedImage);
       });
     }
   }
@@ -189,9 +223,11 @@ class _KritikSaranContentState extends State<KritikSaranContent> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            
+                            var statuscode = _submitKritikSaran();
+                            if (statuscode == 200) {
                             SuccessDialog.show(context, message: 'Kritik & Saran Terkirim');
-                          
+
+                            }                          
                           }
                         },
                         icon: Icon(Icons.send),

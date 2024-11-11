@@ -12,7 +12,7 @@ class onStartBoardingPage extends StatefulWidget {
 
 class _onStartBoardingPageState extends State<onStartBoardingPage> {
 
-    read() async {
+  read() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final key = 'token';
     final value = prefs.get(key ) ?? 0;

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:http/http.dart'
 as http;
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelDokter.dart';
@@ -326,6 +328,27 @@ class DatabaseHelper {
       print('Logout berhasil');
     } else {
       print('Error: Gagal logout');
+    }
+  }
+
+  
+  Future<int> sendKritikSaran(String keluhan, Uint8List image) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final String route = "$serverUrl/upload-keluhan";
+    final request = http.MultipartRequest('POST', Uri.parse(route))
+      ..headers['Authorization'] = 'Bearer $token'
+      ..fields['keluhan'] = keluhan
+      ..files.add(http.MultipartFile.fromBytes('foto', image, filename: 'image.jpg'));
+
+    try {
+      final response = await request.send();
+      print(response.statusCode);
+      return response.statusCode;
+    } catch (e) {
+      print(e);
+      return 500;
     }
   }
 
