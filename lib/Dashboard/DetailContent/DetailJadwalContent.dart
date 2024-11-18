@@ -148,6 +148,10 @@ class _DetailJanjiTemuState extends State<DetailJanjiTemu> {
                     _buildDetailItem("Status", "${widget.riwayatPendaftaran!.status}"),
                     Divider(),
 
+                    SizedBox(height: 10),
+                    _buildDetailItem("No Antrian", "${widget.riwayatPendaftaran!.no_antrian}"),
+                    Divider(),
+
                   ],
                 ),
               ),

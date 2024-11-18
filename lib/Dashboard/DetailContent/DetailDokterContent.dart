@@ -131,7 +131,7 @@ class _DetailDokterContentState extends State<DetailDokterContent> {
                   child: Container(
                     padding: EdgeInsets.all(16.0),
                     width: 347,
-                    height: 191,
+                    height: 200,
                     decoration: ShapeDecoration(
                       color: Colors.white,
                       shape: RoundedRectangleBorder(
@@ -167,10 +167,10 @@ class _DetailDokterContentState extends State<DetailDokterContent> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Lorem Ipsum Dolor is Amet, Lorem Ipsum Dolor is Amet, Lorem Ipsum Dolor is Amet, Lorem Ipsum Dolor is',
+                          'Dr. ${widget.item.namaDokter} adalah dokter berpengalaman di bidang ${widget.item.spesialis} yang peduli dan komunikatif, berkomitmen memberikan perawatan berkualitas tinggi.',
                           style: GoogleFonts.poppins(
                             color: Colors.black,
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
                       
@@ -267,9 +267,13 @@ class _DetailDokterContentState extends State<DetailDokterContent> {
                 lastDate: DateTime(2027),
                 onDateChanged: (DateTime value) {
                   setState(() {
-                    selectedDate = value; // Simpan tanggal yang dipilih
+                    selectedDate = DateTime(
+                      value.year,
+                      value.month,
+                      value.day,
+                    ); // Simpan tanggal yang dipilih
                   });
-                  print('Tanggal yang dipilih: $value');
+                  print('Tanggal yang dipilih: ${selectedDate.toString().split(' ')[0]}');
                 },
               ),
               SizedBox(height: 16.0),
@@ -296,17 +300,20 @@ class _DetailDokterContentState extends State<DetailDokterContent> {
                     final String? no_rm = prefs.getString('no_rm');
                     if (_controllerKeluhan.text.isNotEmpty) {
                       var status = await databaseHelper.sendDateToServer(
-                        selectedDate,
+                        selectedDate.toString(),
                         widget.item.id,
                         no_rm!,
                         _controllerKeluhan.text,
                       );
                       if (status == 200) {
-                        SuccessDialog.show(context, message: 'Janji Temu berhasil dibuat');
-                      } else {
+                        SuccessDialog.show(context, message: 'Janji Temu berhasil dibuat', status: 'Success');
+                      } else if (status == 421) {
+                        SuccessDialog.show(context, message: 'Kemaruk kamu yaa sudah ada janji temu dokter ini di tanggal yang sama', status: 'Failed');
                         // Handle the error case here
                         print('Failed to create appointment');
-                      }
+                      } else {
+                        SuccessDialog.show(context, message: 'Gagal membuat janji temu', status: 'Failed');}
+
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

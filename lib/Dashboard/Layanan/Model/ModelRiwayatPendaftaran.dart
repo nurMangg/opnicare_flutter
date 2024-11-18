@@ -7,6 +7,7 @@ class RiwayatPendaftaran {
   final String tanggalDaftar;
   final String keluhan;
   final String status;
+  final String no_antrian;
   final String createdAt;
   final String updatedAt;
 
@@ -19,6 +20,7 @@ class RiwayatPendaftaran {
     required this.tanggalDaftar,
     required this.keluhan,
     required this.status,
+    required this.no_antrian,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -33,6 +35,7 @@ class RiwayatPendaftaran {
       tanggalDaftar: json['tanggal_daftar'],
       keluhan: json['keluhan'],
       status: json['status'],
+      no_antrian: json['no_antrian'] ?? '',
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
     );

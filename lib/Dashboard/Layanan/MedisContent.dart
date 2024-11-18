@@ -17,11 +17,12 @@ class MedisContent extends StatefulWidget {
   _MedisContentState createState() => _MedisContentState();
 }
 
-class _MedisContentState extends State < MedisContent > {
-  List < Obat > cartItems = [];
+class _MedisContentState extends State<MedisContent> {
+  List<Obat> cartItems = [];
+  List<Obat> filteredItems = [];
   bool isLoading = true;
   DatabaseHelper databaseHelper = new DatabaseHelper();
-
+  TextEditingController searchController = TextEditingController();
 
   Future<void> fetchData() async {
     try {
@@ -29,10 +30,11 @@ class _MedisContentState extends State < MedisContent > {
       if (obats != null) {
         setState(() {
           cartItems = obats;
+          filteredItems = obats; // Inisialisasi filteredItems dengan data asli
           isLoading = false;
         });
       } else {
-        print('Error: Gagalan mengambil data');
+        print('Error: Gagal mengambil data');
       }
     } catch (e) {
       print('Error: $e');
@@ -43,15 +45,31 @@ class _MedisContentState extends State < MedisContent > {
   void initState() {
     super.initState();
     fetchData();
+    searchController.addListener(_filterList); 
   }
+
+void _filterList() {
+  String query = searchController.text.toLowerCase();
+  setState(() {
+    filteredItems = cartItems.where((item) {
+      return item.obatName.toLowerCase().contains(query); // Mengubah item.obatName menjadi lowercase
+    }).toList();
+  });
+}
 
 
   @override
+  void dispose() {
+    searchController.dispose(); // Bersihkan controller ketika widget dihapus
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold( // Tambahkan Scaffold di sini
+    return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50.0), // Tinggi AppBar
+        preferredSize: Size.fromHeight(50.0),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -81,26 +99,27 @@ class _MedisContentState extends State < MedisContent > {
       body: RefreshIndicator(
         onRefresh: fetchData,
         child: isLoading
-          ? Center(child: CircularProgressIndicator()) // Tampilkan indikator loading
+          ? Center(child: CircularProgressIndicator())
           : Padding(
-          padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.yellow[100], // Light yellow background
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.search,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 8),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow[100],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.search,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
+                            controller: searchController,
                             decoration: InputDecoration(
                               hintText: 'Cari Obat',
                               hintStyle: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),
@@ -108,26 +127,23 @@ class _MedisContentState extends State < MedisContent > {
                             ),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                  // List of cart items
+                  const SizedBox(height: 20),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: cartItems.length,
+                      itemCount: filteredItems.length,
                       itemBuilder: (context, index) {
-                        final item = cartItems[index];
+                        final item = filteredItems[index];
                         Uint8List imageBytes;
                         if (item.image != null) {
                           imageBytes = base64Decode(item.image);
                         } else {
-                          // Ganti dengan placeholder image jika null
-                          imageBytes = Uint8List(0); // Misal, image kosong atau placeholder
+                          imageBytes = Uint8List(0);
                         }
                         return GestureDetector(
                           onTap: () {
-                            // Handle the tap event here
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -142,59 +158,57 @@ class _MedisContentState extends State < MedisContent > {
                             ),
                             elevation: 3,
                             margin: const EdgeInsets.only(bottom: 12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    children: [
-                                      item.image != '' ?
-                                      Image.memory(
-                                        imageBytes,
-                                        height: 80,
-                                        width: 80,
-                                        fit: BoxFit.cover,
-                                      ) :
-                                      Image.asset(
-                                        'assets/images/image.png',
-                                        height: 80,
-                                        width: 80,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-
-                                            children: [
-                                              Text(
-                                                item.obatName,
-
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                                Text(
-                                                  'Rp ${item.price}',
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.grey[700],
-                                                  ),
-                                                ),
-                                            ],
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  item.image != '' ?
+                                  Image.memory(
+                                    imageBytes,
+                                    height: 80,
+                                    width: 80,
+                                    fit: BoxFit.cover,
+                                  ) :
+                                  Image.asset(
+                                    'assets/images/image.png',
+                                    height: 80,
+                                    width: 80,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.obatName,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                    ],
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Rp ${item.price}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                ],
                               ),
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
-              ],
-            ),
+                ],
+              ),
         ),
       ),
     );

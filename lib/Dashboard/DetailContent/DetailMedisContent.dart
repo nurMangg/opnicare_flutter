@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:opnicare_app/Component/SuccessDialog.dart';
+import 'package:opnicare_app/Component/SuccessDialogPop.dart';
+import 'package:opnicare_app/Controller/DatabaseHelper.dart';
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelMedis.dart';
 
 class DetailMedisContent extends StatefulWidget {
@@ -18,8 +20,10 @@ class DetailMedisContent extends StatefulWidget {
 }
 
 class _DetailMedisContentState extends State < DetailMedisContent > {
+  bool isLoading = false;
 
   int _quantity = 1;
+  DatabaseHelper databaseHelper = new DatabaseHelper();
 
   void _incrementQuantity() {
     setState(() {
@@ -76,7 +80,9 @@ class _DetailMedisContentState extends State < DetailMedisContent > {
           ),
         ),
       ),
-      body: Padding(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          :Padding(
         padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,9 +145,20 @@ class _DetailMedisContentState extends State < DetailMedisContent > {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      setState(() {
+                        isLoading = true;
+                      });
                       // Aksi menambahkan ke keranjang
-                      SuccessDialog.show(context, message: 'Item Berhasil Ditambahkan Ke Keranjang');
+                      var result = await databaseHelper.tambahKeranjang(widget.obat.obatId, _quantity);
+                      setState(() {
+                        isLoading = false;
+                      });
+                      if (result == 200) {
+                        SuccessDialogPop.show(context, message: 'Item Berhasil Ditambahkan Ke Keranjang');
+                      } else {
+                        SuccessDialogPop.show(context, message: 'Item Gagal Ditambahkan Ke Keranjang');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFFD60A),

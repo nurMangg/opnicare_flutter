@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:opnicare_app/Dashboard/HomeContent.dart';
 import 'package:opnicare_app/dashboardPage.dart';
 
-class SuccessDialog {
+class SuccessDialogPop {
   static void show(BuildContext context, {String message = 'Success', String status = 'Success'}) {
     showDialog(
       
@@ -38,7 +38,10 @@ class SuccessDialog {
                 SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => DashboardPage()),
+                      (Route<dynamic> route) => false,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFFFD60A),

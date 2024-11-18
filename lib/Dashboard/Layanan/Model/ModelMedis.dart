@@ -1,4 +1,5 @@
 class Obat {
+  final String obatId;
   final String obatName;
   final String indikasi;
   final String dosis;
@@ -10,6 +11,7 @@ class Obat {
   final String image;
 
   Obat({
+    required this.obatId,
     required this.obatName,
     required this.indikasi,
     required this.dosis,
@@ -23,6 +25,7 @@ class Obat {
 
   factory Obat.fromJson(Map<String, dynamic> json) {
     return Obat(
+      obatId: json['medicine_id'] ?? '',
       obatName: json['nama_obat'] ?? 'Unknown',
       indikasi: json['efek_samping'] ?? 'Tidak ada',
       dosis: json['bentuk_dosis'] ?? '',

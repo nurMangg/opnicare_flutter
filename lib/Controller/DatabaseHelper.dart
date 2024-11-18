@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart'
 as http;
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelDokter.dart';
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelKamar.dart';
+import 'package:opnicare_app/Dashboard/Layanan/Model/ModelKeranjang.dart';
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelMedis.dart';
 import 'package:opnicare_app/Dashboard/Layanan/Model/ModelRiwayatPendaftaran.dart';
 import 'dart:convert';
@@ -11,68 +13,85 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseHelper {
 
-  String serverUrl = "http://192.168.1.62:8000/api";
+  String serverUrl="http://192.168.1.62:8000/api";
   var status;
 
   var token;
   String ? csrfToken;
 
-  Future < void > getCsrfToken() async {
+  Future < void>getCsrfToken() async {
     try {
-      final response = await http.get(Uri.parse('$serverUrl/csrf-token'));
-      if (response.statusCode == 200) {
-        // Token CSRF yang diterima dari server
-        csrfToken = json.decode(response.body)['csrf_token'];
+      final response=await http.get(Uri.parse('$serverUrl/csrf-token'));
+
+      if (response.statusCode==200) {
+        csrfToken=json.decode(response.body)['csrf_token'];
 
         print('CSRF Token: $csrfToken');
-      } else {
+      }
+
+      else {
         print('Gagal mendapatkan token CSRF');
       }
-    } catch (e) {
+    }
+
+    catch (e) {
       print('Error: $e');
     }
   }
 
-  Future < bool > loginData(String email, String password) async {
-    String myUrl = "$serverUrl/login";
+  Future < bool>loginData(String email, String password) async {
+    String myUrl="$serverUrl/login";
     await getCsrfToken();
 
     try {
-      final response = await http.post(
-        Uri.parse(myUrl),
+
+      final response=await http.post(Uri.parse(myUrl),
         headers: {
           'Accept': 'application/json',
           'X-CSRF-TOKEN': csrfToken ?? ''
-        },
+        }
+
+        ,
         body: {
           "email": email,
           "password": password,
-        },
+        }
+
+        ,
       );
 
-      if (response.statusCode == 200) {
-        var data = json.decode(response.body);
-        status = data.containsKey('error');
+      if (response.statusCode==200) {
+        var data=json.decode(response.body);
+        status=data.containsKey('error');
 
         if (status) {
           print('Error: ${data["error"]}');
-          return false; // Login gagal
-        } else if (data["token"] != null) {
+          return false;
+        }
+
+        else if (data["token"] !=null) {
           print('Token: ${data["token"]}');
           _save(data["token"]);
           _save_noRM(data["no_rm"]);
-          return true; // Login berhasil
-        } else {
-          print('Token is null');
-          return false; // Login gagal karena token tidak tersedia
+          _save_nama(data["nama"]);
+          return true; 
         }
-      } else {
-        print('Failed to connect to the server');
-        return false; // Login gagal karena respons tidak 200
+
+        else {
+          print('Token is null');
+          return false; 
+        }
       }
-    } catch (e) {
+
+      else {
+        print('Failed to connect to the server');
+        return false; 
+      }
+    }
+
+    catch (e) {
       print('Exception: $e');
-      return false; // Login gagal karena ada exception
+      return false; 
     }
   }
 
@@ -102,253 +121,418 @@ class DatabaseHelper {
   // }
 
 
-  Future < Map < String, dynamic > ? > getDataUser() async {
+  Future < Map < String,
+  dynamic>?>getDataUser() async {
 
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'token';
-    final value = prefs.get(key) ?? 0;
+    final prefs=await SharedPreferences.getInstance();
+    final key='token';
+    final value=prefs.get(key) ?? 0;
 
-    String myUrl = "$serverUrl/user/";
-    http.Response response = await http.get(Uri.parse(myUrl),
+    String myUrl="$serverUrl/user/";
+
+    http.Response response=await http.get(Uri.parse(myUrl),
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer $value'
-      });
+      }
+
+    );
     return json.decode(response.body);
   }
 
   _save(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'token';
-    final value = token;
+    final prefs=await SharedPreferences.getInstance();
+    final key='token';
+    final value=token;
     prefs.setString(key, value);
   }
 
   _save_noRM(String no_rm) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'no_rm';
-    final value = no_rm;
+    final prefs=await SharedPreferences.getInstance();
+    final key='no_rm';
+    final value=no_rm;
+    prefs.setString(key, value);
+  }
+
+    _save_nama(String nama) async {
+    final prefs=await SharedPreferences.getInstance();
+    final key='nama';
+    final value=nama;
     prefs.setString(key, value);
   }
 
 
   read() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'token';
-    final value = prefs.get(key) ?? 0;
+    final prefs=await SharedPreferences.getInstance();
+    final key='token';
+    final value=prefs.get(key) ?? 0;
     print('read : $value');
   }
 
-  Future < int > sendDateToServer(DateTime date, String dokter, String pasien, String keluhan) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'token';
-    final value = prefs.get(key) ?? 0;
+  Future < int>sendDateToServer(String date, String dokter, String pasien, String keluhan) async {
+    final prefs=await SharedPreferences.getInstance();
+    final key='token';
+    final value=prefs.get(key) ?? 0;
 
-    final String route = "$serverUrl/send-data-pendaftaran"; // Ganti dengan URL server Anda
-    final response = await http.post(
-      Uri.parse(route),
+    final String route="$serverUrl/send-data-pendaftaran"; // Ganti dengan URL server Anda
+
+    final response=await http.post(Uri.parse(route),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $value'
 
       },
-      body: json.encode({
-        'date': date.toIso8601String(), // Mengirimkan tanggal dalam format ISO 8601
-        'dokter_id': dokter,
-        'pasien_id': pasien,
-        'keluhan': keluhan
-      }),
+      body: json.encode( {
+          'date': date, 
+          'dokter_id': dokter,
+          'pasien_id': pasien,
+          'keluhan': keluhan
+        }
+
+      ),
+
     );
+      print(date + " " + dokter + " " + pasien);
 
     return response.statusCode;
   }
 
 
 
-  Future < List < RiwayatPendaftaran > ? > getRiwayatPendaftaran() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    final noRm = prefs.getString('no_rm') ?? '';
+  Future < List < RiwayatPendaftaran>?>getRiwayatPendaftaran() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
 
-    final String route = "$serverUrl/get-riwayat-pendaftaran/$noRm";
-    final response = await http.get(
-      Uri.parse(route),
+    final String route="$serverUrl/get-riwayat-pendaftaran/$noRm";
+
+    final response=await http.get(Uri.parse(route),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
-      },
+      }
+
+      ,
     );
 
-    if (response.statusCode == 200) {
-      final List < dynamic > jsonData = json.decode(response.body);
-      return jsonData
-        .map((item) => RiwayatPendaftaran.fromJson(item))
-        .toList();
-    } else {
+    if (response.statusCode==200) {
+      final List < dynamic>jsonData=json.decode(response.body);
+      return jsonData .map((item)=> RiwayatPendaftaran.fromJson(item)) .toList();
+    }
+
+    else {
       // Handle the case where the response is not successful
       return null;
     }
   }
 
-  Future < List < Dokter > ? > getDataDokter() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    final noRm = prefs.getString('no_rm') ?? '';
+  Future < List < Dokter>?>getDataDokter() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
 
     try {
-      final String route = '${serverUrl}/getDokter';
-      final response = await http.get(
-        Uri.parse(route),
+      final String route='${serverUrl}/getDokter';
+
+      final response=await http.get(Uri.parse(route),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-        },
+        }
+
+        ,
       );
       print(response.statusCode);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        final List<Dokter> dokters = jsonData.map((item) => Dokter.fromJson(item)).toList();
+
+      if (response.statusCode==200) {
+        final List<dynamic>jsonData=json.decode(response.body);
+        final List<Dokter>dokters=jsonData.map((item)=> Dokter.fromJson(item)).toList();
         return dokters;
-      } else if (response.statusCode == 419) {
+      }
+
+      else if (response.statusCode==419) {
         await refreshToken();
         return await getDataDokter();
-      } else {
+      }
+
+      else {
         print('Error: Gagal mengambil data');
         return null;
       }
-    } catch (e) {
+    }
+
+    catch (e) {
       print('Error: $e');
       return null;
     }
   }
 
-  Future < List < Obat > ? > getDataObat() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    final noRm = prefs.getString('no_rm') ?? '';
+  Future < List < Obat>?>getDataObat() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
 
     try {
-      final String route = '${serverUrl}/getObat';
-      final response = await http.get(
-        Uri.parse(route),
+      final String route='${serverUrl}/getObat';
+
+      final response=await http.get(Uri.parse(route),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-        },
+        }
+
+        ,
       );
       print(response.statusCode);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        final List<Obat> obats = jsonData.map((item) => Obat.fromJson(item)).toList();
+
+      if (response.statusCode==200) {
+        final List<dynamic>jsonData=json.decode(response.body);
+        final List<Obat>obats=jsonData.map((item)=> Obat.fromJson(item)).toList();
         return obats;
-      } else if (response.statusCode == 419) {
+      }
+
+      else if (response.statusCode==419) {
         await refreshToken();
         return await getDataObat();
-      } else {
+      }
+
+      else {
         print('Error: Gagal mengambil data');
         return null;
       }
-    } catch (e) {
+    }
+
+    catch (e) {
       print('Error: $e');
       return null;
     }
   }
 
-  Future < List < Kamar > ? > getDataKamar() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    final noRm = prefs.getString('no_rm') ?? '';
+  Future < List < Kamar>?>getDataKamar() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
 
     try {
-      final String route = '${serverUrl}/getKamar';
-      final response = await http.get(
-        Uri.parse(route),
+      final String route='${serverUrl}/getKamar';
+
+      final response=await http.get(Uri.parse(route),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-        },
+        }
+
+        ,
       );
       print(response.statusCode);
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        final List<Kamar> kamars = jsonData.map((item) => Kamar.fromJson(item)).toList();
+
+      if (response.statusCode==200) {
+        final List<dynamic>jsonData=json.decode(response.body);
+        final List<Kamar>kamars=jsonData.map((item)=> Kamar.fromJson(item)).toList();
         return kamars;
-      } else if (response.statusCode == 419) {
+      }
+
+      else if (response.statusCode==419) {
         await refreshToken();
         return await getDataKamar();
-      } else {
+      }
+
+      else {
         print('Error: Gagal mengambil data');
         return null;
       }
-    } catch (e) {
+    }
+
+    catch (e) {
       print('Error: $e');
       return null;
     }
   }
 
-  Future<void> refreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
+  Future<void>refreshToken() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
 
-    final String route = "$serverUrl/token/refresh";
-    final response = await http.post(
-      Uri.parse(route),
+    final String route="$serverUrl/token/refresh";
+
+    final response=await http.post(Uri.parse(route),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
-      },
+      }
+
+      ,
     );
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+    if (response.statusCode==200) {
+      final jsonData=json.decode(response.body);
       _save(jsonData['token']);
       print('Refresh token berhasil');
-    } else {
+    }
+
+    else {
       print('Error: Gagal refresh token');
     }
   }
 
 
-  Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
+  Future<void>logout() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
 
-    final String route = "$serverUrl/logout";
-    final response = await http.post(
-      Uri.parse(route),
+    final String route="$serverUrl/logout";
+
+    final response=await http.post(Uri.parse(route),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
-      },
+      }
+
+      ,
     );
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+    if (response.statusCode==200) {
+      final jsonData=json.decode(response.body);
       await prefs.remove('token');
       print('Logout berhasil');
-    } else {
+    }
+
+    else {
       print('Error: Gagal logout');
     }
   }
 
-  
-  Future<int> sendKritikSaran(String keluhan, Uint8List image) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
 
-    final String route = "$serverUrl/upload-keluhan";
-    final request = http.MultipartRequest('POST', Uri.parse(route))
-      ..headers['Authorization'] = 'Bearer $token'
-      ..fields['keluhan'] = keluhan
-      ..files.add(http.MultipartFile.fromBytes('foto', image, filename: 'image.jpg'));
+  Future<int>sendKritikSaran(String keluhan, File image) async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
 
-    try {
-      final response = await request.send();
-      print(response.statusCode);
-      return response.statusCode;
-    } catch (e) {
-      print(e);
+    final String route="$serverUrl/send-keluhan";
+    final request=http.MultipartRequest('POST', Uri.parse(route)) ..headers['Authorization']='Bearer $token'
+    ..fields['keluhan']=keluhan ..files.add(await http.MultipartFile.fromPath('foto',
+        image.path,
+      ));
+
+    request.headers['Accept']='application/json';
+
+    final response=await request.send();
+    print(response.statusCode);
+
+    if (response.statusCode==422) {
+      final responseBody=await response.stream.bytesToString();
+      final errorMessage='Terjadi kesalahan: $responseBody';
+      print(errorMessage);
+      return 422;
+    }
+
+    else if (response.statusCode==500) {
+      print('Terjadi kesalahan server');
       return 500;
+    }
+
+    else {
+      print('Berhasil mengirim laporan');
+      return response.statusCode;
+    }
+  }
+
+
+  Future<int>tambahKeranjang(String productId, int quantity) async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
+
+
+    final String route="$serverUrl/tambah-obat";
+
+    final response=await http.post(Uri.parse(route),
+      headers: {
+        'Authorization': 'Bearer ${token}',
+        'Content-Type': 'application/json',
+      }
+
+      ,
+      body: json.encode( {
+          'pasienId': noRm,
+          'obatId': productId,
+          'jumlah': quantity,
+        }
+
+      ),
+    );
+
+    if (response.statusCode==200) {
+      print('Product added to cart');
+      return response.statusCode;
+    }
+
+    else {
+      print('Failed to add product to cart');
+      return response.statusCode;
+    }
+  }
+
+  Future<List<Keranjang>?>getDataKeranjang() async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
+
+    final String route='$serverUrl/get-data-keranjang/$noRm';
+
+    final response=await http.get(Uri.parse(route),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      }
+
+      ,
+    );
+
+    print(response.statusCode);
+
+    if (response.statusCode==200) {
+      final List<dynamic>jsonData=json.decode(response.body);
+      return jsonData .map((item)=> Keranjang.fromJson(item)) .toList();
+    }
+
+    else {
+      print('Error: Failed to fetch data');
+      return null;
+    }
+  }
+
+  Future<int>transaksiObat(List<Map<String,dynamic>>obat, double total) async {
+    final prefs=await SharedPreferences.getInstance();
+    final token=prefs.getString('token') ?? '';
+    final noRm=prefs.getString('no_rm') ?? '';
+
+
+    final String route="$serverUrl/transaksi-obat";
+
+    final response=await http.post(Uri.parse(route),
+      headers: {
+        'Authorization': 'Bearer ${token}',
+        'Content-Type': 'application/json',
+      }
+
+      ,
+      body: json.encode( {
+          'pasienId': noRm,
+          'obat': obat,
+          'total': total,
+        }
+
+      ),
+    );
+    print("transaksiObat : ${response.statusCode}");
+    if (response.statusCode==200) {
+      print('Transaksi Obat success');
+      return response.statusCode;
+    }
+
+    else {
+      print('Failed to transaksi obat');
+      return response.statusCode;
     }
   }
 

@@ -26,13 +26,18 @@ class _KritikSaranContentState extends State<KritikSaranContent> {
       if (_selectedImage != null) {
         try {
           final imageBytes = await _selectedImage!.readAsBytes();
-          final statusCode = await databaseHelper.sendKritikSaran(_keluhan, imageBytes);
+          final statusCode = await databaseHelper.sendKritikSaran(_keluhan, _selectedImage!);
 
           print(imageBytes);
           if (statusCode == 200) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Berhasil mengirim Kritik dan Saran.')),
+              SnackBar(content: Text('Berhasil mengirim Kritik dan Saran.', style: TextStyle(color: Colors.white)), backgroundColor: AppColor.primaryColor),
             );
+            setState(() {
+              _keluhan = '';
+              _selectedImage = null;
+            });
+            _formKey.currentState?.reset();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Gagal mengirim Kritik dan Saran.')),

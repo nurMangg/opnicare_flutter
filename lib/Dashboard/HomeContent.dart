@@ -11,13 +11,30 @@ import 'package:opnicare_app/Dashboard/Layanan/MedisContent.dart';
 import 'package:opnicare_app/Dashboard/Layanan/PengaturanContent.dart';
 import 'package:opnicare_app/Dashboard/Layanan/ProfileContent.dart';
 import 'package:opnicare_app/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeContent extends StatefulWidget {
   @override
   State<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeContentState extends State<HomeContent>{
+  String? nama;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    setState(() {
+      nama = _prefs.getString('nama');
+    });
+    print(nama);
+  }
+  
   
   final List<String> newsList = [
     'Berita 1: Update terbaru dari OPNICARE...',
@@ -51,7 +68,7 @@ class _HomeContentState extends State<HomeContent> {
                         ),
                       ),
                       Text(
-                        'Nur Rohman',
+                        "${nama}",
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
@@ -100,45 +117,48 @@ class _HomeContentState extends State<HomeContent> {
                   color: AppColor.primaryColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Row(
+                child: Stack(
                   children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Dapatkan Pelayanan\nMedical Terbaik',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      right: 140,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dapatkan Pelayanan\nMedical Terbaik',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pelayanan profesional, fasilitas modern untuk kesehatan terbaik Anda.',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white70,
+                              fontSize: 14,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                      child: Image.asset(
-                        'assets/images/Pages/banner_dashboard.png', // Replace with your image path
-                        height: 160,
-                        width: 120,
-                        fit: BoxFit.cover,
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        ),
+                        child: Image.asset(
+                          'assets/images/Pages/banner_dashboard.png',
+                          width: 120,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ],
@@ -218,7 +238,7 @@ class _HomeContentState extends State<HomeContent> {
                         ),
                       );
                     },
-                    label: 'Dokter',
+                    label: 'Pendaftaran',
                   ),
                   ServiceIcon(
                     icon: Icons.chat_bubble,
@@ -285,7 +305,7 @@ class _HomeContentState extends State<HomeContent> {
                         onTap: () {
                           // Tambahkan aksi yang ingin dilakukan saat item ditekan
                           print('Tapped on: $news');
-                          // Misalnya, navigasi ke halaman detail atau melakukan tindakan lain
+                          
                         },
                         child: Container(
                           width: MediaQuery.of(context).size.width, // Full width of the container
@@ -363,4 +383,5 @@ class ServiceIcon extends StatelessWidget {
     );
   }
 }
+
 

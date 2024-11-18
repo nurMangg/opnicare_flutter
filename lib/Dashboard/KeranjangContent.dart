@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:opnicare_app/Component/SuccessDialog.dart';
+import 'package:opnicare_app/Controller/DatabaseHelper.dart';
+import 'package:opnicare_app/Dashboard/Layanan/Model/ModelKeranjang.dart';
 import 'package:opnicare_app/main.dart';
 
 class KeranjangContent extends StatefulWidget {
@@ -8,30 +13,40 @@ class KeranjangContent extends StatefulWidget {
 }
 
 class _KeranjangContentState extends State<KeranjangContent> {
-  final List<Map<String, dynamic>> cartItems = [
-    {
-      'obatName': 'Paracetamol',
-      'price': 20000,
-      'quantity': 2,
-      'image': 'assets/images/Pages/Keranjang/Paracetamol.jpg',
-    },
-    {
-      'obatName': 'Vitamin C 500mg',
-      'price': 30000,
-      'quantity': 1,
-      'image': 'assets/images/Pages/Keranjang/VitaminC.png',
-    },
-    {
-      'obatName': 'Amoxicillin 500mg',
-      'price': 50000,
-      'quantity': 1,
-      'image': 'assets/images/Pages/Keranjang/Amoxicilin.jpg',
-    },
-  ];
+  DatabaseHelper apiService = DatabaseHelper();
+
+
+  Future<List<Keranjang>> fetchCartItems() async {
+
+    final List<Keranjang>? jsonData = await apiService.getDataKeranjang();
+    if (jsonData != null) {
+      return jsonData;
+    } else {
+      return [];
+    }
+  }
+
+  List<Keranjang> cartItems = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCartItems().then((value) {
+      setState(() {
+        cartItems = value;
+        isLoading = false;
+      });
+    });
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = cartItems.fold(0, (sum, item) => sum + (item['price'] * item['quantity']));
+    double totalPrice = cartItems.fold(0, (sum, item) => sum + (double.parse(item.price) * double.parse(item.quantity)));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -70,88 +85,111 @@ class _KeranjangContentState extends State<KeranjangContent> {
           children: [
             // List of cart items
             Expanded(
-              child: ListView.builder(
-                itemCount: cartItems.length,
-                itemBuilder: (context, index) {
-                  final item = cartItems[index];
-                  return Dismissible(
-                    key: Key(item['obatName']), // Gunakan key unik untuk setiap item
-                    direction: DismissDirection.endToStart, // Geser dari kanan ke kiri
-                    background: Container(
-                      color: Colors.red,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: Icon(
-                            Icons.delete,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    onDismissed: (direction) {
-                      // Hapus item dari cartItems
-                      setState(() {
-                        cartItems.removeAt(index);
-                      });
-                    },
-                    child: Card(
-                      color: AppColor.secondaryTextColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 3,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Image.asset(
-                              item['image'],
-                              height: 80,
-                              width: 80,
-                              fit: BoxFit.cover,
+              child: cartItems.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: cartItems.length,
+                      itemBuilder: (context, index) {
+                        final item = cartItems[index];
+                        return Dismissible(
+                          key: Key(item.obatName), // Gunakan key unik untuk setiap item
+                          direction: DismissDirection.endToStart, // Geser dari kanan ke kiri
+                          background: Container(
+                            color: Colors.red,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 16.0),
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          ),
+                          onDismissed: (direction) {
+                            // Hapus item dari cartItems
+                            setState(() {
+                              cartItems.removeAt(index);
+                              print(cartItems.length);
+                            });
+                          },
+                          child: Card(
+                            color: AppColor.secondaryTextColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 3,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
                                 children: [
+                                  item.image != null
+                                      ? Image.memory(
+                                          base64Decode(item.image),
+                                          height: 80,
+                                          width: 80,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(
+                                          height: 80,
+                                          width: 80,
+                                          decoration: BoxDecoration(
+                                            color: AppColor.primaryColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.obatName,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Rp ${item.price}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Text(
-                                    item['obatName'],
+                                    'x${item.quantity}',
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Rp ${item['price']}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.grey[700],
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Text(
-                              'x${item['quantity']}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Text(
+                        'Tidak ada item di keranjang',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
             ),
 
             // Total price section
@@ -187,8 +225,32 @@ class _KeranjangContentState extends State<KeranjangContent> {
                 ),
                 backgroundColor: AppColor.secondaryColor,
               ),
-              onPressed: () {
+              onPressed: () async {
                 // Navigate to payment page
+
+                final response = await apiService.transaksiObat(
+                  cartItems.map((item) => {
+                    'obatId': item.medicine_id,
+                    'jumlah': item.quantity,
+                  }).toList(),
+                  totalPrice,
+                );
+                if (response == 200) {
+                  SuccessDialog.show(context, message: 'Item Berhasil Ditambahkan Ke Keranjang');
+                  fetchCartItems().then((value) {
+                    setState(() {
+                      cartItems = value;
+                      isLoading = false;
+                    });
+                  });
+
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Gagal melakukan transaksi'),
+                    ),
+                  );
+                }
               },
               child: Text(
                 'Lanjutkan Pembayaran',

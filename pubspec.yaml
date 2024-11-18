@@ -98,6 +98,7 @@ flutter:
     - assets/images/Pages/Dokter/Background.png
 
     - assets/success.json
+    - assets/failed.json
 
 
   #   - images/a_dot_burr.jpeg
